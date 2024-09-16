@@ -35,6 +35,26 @@ const POL_TECH_ABI = [
     outputs: [{ type: "uint256" }],
     stateMutability: "view",
   },
+  {
+    type: "function",
+    name: "getBuyPrice",
+    inputs: [
+      { name: "subject", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ type: "uint256" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "getSellPrice",
+    inputs: [
+      { name: "subject", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ type: "uint256" }],
+    stateMutability: "view",
+  },
 ] as const;
 
 export function ShareTrading() {
@@ -51,16 +71,31 @@ export function ShareTrading() {
     args: [account.address ?? "0x0", subjectAddress],
   });
 
+  const { data: buyPriceData } = useReadContract({
+    address: POL_TECH_ADDRESS,
+    abi: POL_TECH_ABI,
+    functionName: "getBuyPrice",
+    args: [subjectAddress, parseEther(amount)],
+  });
+
+  const { data: sellPriceData } = useReadContract({
+    address: POL_TECH_ADDRESS,
+    abi: POL_TECH_ABI,
+    functionName: "getSellPrice",
+    args: [subjectAddress, parseEther(amount)],
+  });
+
   const { writeContract } = useWriteContract();
 
   const handleBuy = () => {
-    if (subjectAddress) {
+    if (subjectAddress && buyPriceData) {
+      const [buyPrice] = buyPriceData;
       writeContract({
         address: POL_TECH_ADDRESS,
         abi: POL_TECH_ABI,
         functionName: "buyShares",
-        args: [subjectAddress],
-        value: parseEther(amount),
+        args: [subjectAddress, parseEther(amount)],
+        value: buyPrice,
       });
     }
   };
@@ -96,6 +131,10 @@ export function ShareTrading() {
         <Button onClick={handleSell}>Sell Shares</Button>
         {sharesBalance && (
           <p>Your shares balance: {sharesBalance.toString()}</p>
+        )}
+        {buyPriceData && <p>Buy Price: {formatEther(buyPriceData[0])} BERA</p>}
+        {sellPriceData && (
+          <p>Sell Price: {formatEther(sellPriceData[0])} BERA</p>
         )}
       </CardContent>
     </Card>
