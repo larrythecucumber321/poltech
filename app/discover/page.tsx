@@ -1,5 +1,5 @@
 "use client";
-import { useAccount } from "wagmi";
+
 import {
   DEFAULT_SUBJECTS,
   useGetSharePrice,
@@ -8,21 +8,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { Button } from "@/components/button";
 import Link from "next/link";
 
-export default function Home() {
-  const { address } = useAccount();
-
+export default function DiscoverPage() {
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Welcome to POLTech</h1>
-      {address ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {DEFAULT_SUBJECTS.map((subject) => (
-            <SubjectCard key={subject} subject={subject} />
-          ))}
-        </div>
-      ) : (
-        <p>Please connect your wallet to view subjects and trade keys.</p>
-      )}
+      <h1 className="text-2xl font-bold mb-4">Discover Subjects</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {DEFAULT_SUBJECTS.map((subject) => (
+          <SubjectCard key={subject} subject={subject} />
+        ))}
+      </div>
     </div>
   );
 }
