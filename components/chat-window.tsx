@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
 import { Input } from "@/components/input";
 import { Button } from "@/components/button";
 import { supabase } from "@/lib/supabase";
+import { useGetSharesBalance } from "@/app/hooks/useShareTrading";
 
 type Message = {
   id: string;
@@ -22,34 +23,57 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
   const [chatRoomId, setChatRoomId] = useState<string | null>(null);
   const { address } = useAccount();
-
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { data: sharesBalance } = useGetSharesBalance(address || "0x", subject);
   useEffect(() => {
-    fetchOrCreateChatRoom(subject);
-  }, [subject]);
+    if (sharesBalance && sharesBalance >= 1n) {
+      fetchOrCreateChatRoom(subject);
+    }
+  }, [subject, sharesBalance]);
 
   useEffect(() => {
     if (chatRoomId) {
       fetchMessages(chatRoomId);
-      subscribeToNewMessages(chatRoomId);
+      const subscription = subscribeToNewMessages(chatRoomId);
+      return () => {
+        subscription.unsubscribe();
+      };
     }
   }, [chatRoomId]);
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
   const fetchOrCreateChatRoom = async (subject: `0x${string}`) => {
-    let { data: chatRoom } = await supabase
+    // Fetch all chat rooms
+    let { data: chatRooms, error } = await supabase
       .from("chat_rooms")
-      .select("id")
-      .eq("subject", subject)
-      .single();
+      .select("*")
+      .ilike("subject", `%${subject}%`);
+
+    if (error) {
+      console.error("Error fetching chat rooms:", error);
+      return;
+    }
+
+    let chatRoom = chatRooms?.find(
+      (room) => room.subject.toLowerCase() === subject.toLowerCase()
+    );
 
     if (!chatRoom) {
-      const { data: newChatRoom, error } = await supabase
+      console.log("Creating new chat room for subject:", subject);
+      const { data: newChatRoom, error: insertError } = await supabase
         .from("chat_rooms")
-        .insert({ subject })
+        .insert({ subject: subject.toLowerCase() })
         .select()
         .single();
 
-      if (error) {
-        console.error("Error creating chat room:", error);
+      if (insertError) {
+        console.error("Error creating chat room:", insertError);
         return;
       }
 
@@ -75,7 +99,7 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
   };
 
   const subscribeToNewMessages = (chatRoomId: string) => {
-    const subscription = supabase
+    return supabase
       .channel(`chat_room:${chatRoomId}`)
       .on(
         "postgres_changes",
@@ -93,18 +117,13 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
         }
       )
       .subscribe();
-
-    return () => {
-      supabase.removeChannel(subscription);
-    };
   };
 
   const sendMessage = async () => {
     if (!address || !newMessage.trim() || !chatRoomId) return;
-
     const { error } = await supabase.from("messages").insert({
       chat_room_id: chatRoomId,
-      sender: address,
+      sender: address.toLowerCase(),
       content: newMessage.trim(),
     });
 
@@ -116,32 +135,49 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
     setNewMessage("");
   };
 
+  if (!sharesBalance || sharesBalance === 0n) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-lg text-gray-500">
+          You need to own at least one share to access this chat.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-full">
-      <h2 className="text-xl font-bold mb-4">
+    <div className="flex flex-col h-full bg-gray-100 rounded-lg shadow-md">
+      <h2 className="text-xl font-bold mb-4 p-4 bg-gray-200 rounded-t-lg">
         Chat with {subject.slice(0, 6)}...{subject.slice(-4)}
       </h2>
-      <div className="flex-1 overflow-y-auto mb-4">
+      <div className="flex-1 overflow-y-auto mb-4 p-4">
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`mb-2 ${
-              message.sender === address ? "text-right" : "text-left"
+            className={`mb-2 flex ${
+              message.sender === address ? "justify-end" : "justify-start"
             }`}
           >
-            <span className="inline-block bg-gray-200 rounded px-2 py-1">
-              <p className="font-semibold">
+            <div
+              className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                message.sender === address
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-300 text-gray-800"
+              }`}
+            >
+              <p className="font-semibold text-sm">
                 {message.sender.slice(0, 6)}...{message.sender.slice(-4)}
               </p>
-              <p>{message.content}</p>
-              <p className="text-xs text-gray-500">
+              <p className="break-words">{message.content}</p>
+              <p className="text-xs opacity-75 mt-1">
                 {new Date(message.created_at).toLocaleString()}
               </p>
-            </span>
+            </div>
           </div>
         ))}
+        <div ref={messagesEndRef} />
       </div>
-      <div className="flex">
+      <div className="flex p-4 bg-gray-200 rounded-b-lg">
         <Input
           type="text"
           value={newMessage}
