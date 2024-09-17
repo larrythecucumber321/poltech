@@ -1,196 +1,212 @@
 {
   "abi": [
+    { "type": "constructor", "inputs": [], "stateMutability": "nonpayable" },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_polVault",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
+      "type": "function",
+      "name": "INITIAL_SHARE_PRICE",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "subject",
-          "type": "address"
-        }
-      ],
+      "type": "function",
+      "name": "SHARE_PRICE_DIVIDER",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "SHARE_PRICE_MULTIPLIER",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
       "name": "buyShares",
+      "inputs": [
+        { "name": "subject", "type": "address", "internalType": "address" },
+        { "name": "amount", "type": "uint256", "internalType": "uint256" }
+      ],
       "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
+      "stateMutability": "payable"
     },
     {
+      "type": "function",
+      "name": "getBuyPrice",
       "inputs": [
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "subject",
-          "type": "address"
-        }
+        { "name": "subject", "type": "address", "internalType": "address" },
+        { "name": "amount", "type": "uint256", "internalType": "uint256" }
       ],
-      "name": "getSharesBalance",
       "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
+        { "name": "", "type": "uint256", "internalType": "uint256" },
+        { "name": "", "type": "uint256", "internalType": "uint256" }
       ],
-      "stateMutability": "view",
-      "type": "function"
+      "stateMutability": "view"
     },
     {
+      "type": "function",
+      "name": "getSellPrice",
       "inputs": [
-        {
-          "internalType": "address",
-          "name": "subject",
-          "type": "address"
-        }
+        { "name": "subject", "type": "address", "internalType": "address" },
+        { "name": "amount", "type": "uint256", "internalType": "uint256" }
       ],
+      "outputs": [
+        { "name": "", "type": "uint256", "internalType": "uint256" },
+        { "name": "", "type": "uint256", "internalType": "uint256" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
       "name": "getSharePrice",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
+      "inputs": [
+        { "name": "subject", "type": "address", "internalType": "address" }
       ],
-      "stateMutability": "view",
-      "type": "function"
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
     },
     {
+      "type": "function",
+      "name": "getSharesBalance",
       "inputs": [
-        {
-          "internalType": "address",
-          "name": "subject",
-          "type": "address"
-        }
+        { "name": "user", "type": "address", "internalType": "address" },
+        { "name": "subject", "type": "address", "internalType": "address" }
       ],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
       "name": "getSharesSupply",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
+      "inputs": [
+        { "name": "subject", "type": "address", "internalType": "address" }
       ],
-      "stateMutability": "view",
-      "type": "function"
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
     },
     {
-      "inputs": [],
+      "type": "function",
       "name": "polVault",
-      "outputs": [
-        {
-          "internalType": "contract IBerachainRewardsVault",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "subject",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "sellShares",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        },
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "sharesBalance",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "sharePrice",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "sharesSupply",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [],
-      "name": "stakingToken",
       "outputs": [
         {
-          "internalType": "contract FriendTechStakingToken",
           "name": "",
-          "type": "address"
+          "type": "address",
+          "internalType": "contract IBerachainRewardsVault"
         }
       ],
-      "stateMutability": "view",
-      "type": "function"
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "sellShares",
+      "inputs": [
+        { "name": "subject", "type": "address", "internalType": "address" },
+        { "name": "amount", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "sharePrice",
+      "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "sharesBalance",
+      "inputs": [
+        { "name": "", "type": "address", "internalType": "address" },
+        { "name": "", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "sharesSupply",
+      "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "stakingToken",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract PoLStakingToken"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "event",
+      "name": "SharesBought",
+      "inputs": [
+        {
+          "name": "buyer",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "subject",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "price",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "SharesSold",
+      "inputs": [
+        {
+          "name": "seller",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "subject",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "price",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
     }
   ]
 }

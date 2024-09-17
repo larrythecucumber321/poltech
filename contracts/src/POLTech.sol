@@ -5,6 +5,12 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
+interface IBerachainRewardsVaultFactory {
+    function createRewardsVault(
+        address stakingToken
+    ) external returns (address);
+}
+
 interface IBerachainRewardsVault {
     function delegateStake(address account, uint256 amount) external;
     function delegateWithdraw(address account, uint256 amount) external;
@@ -56,9 +62,16 @@ contract POLTech {
         uint256 price
     );
 
-    constructor(address _polVault) {
-        polVault = IBerachainRewardsVault(_polVault);
+    constructor() {
+        address vaultFactory = 0x2B6e40f65D82A0cB98795bC7587a71bfa49fBB2B;
+
         stakingToken = new PoLStakingToken(address(this));
+
+        polVault = IBerachainRewardsVault(
+            IBerachainRewardsVaultFactory(vaultFactory).createRewardsVault(
+                address(stakingToken)
+            )
+        );
     }
 
     function buyShares(address subject, uint256 amount) external payable {

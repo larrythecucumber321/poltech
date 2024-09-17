@@ -8,8 +8,7 @@ contract DeployPOLTech is Script {
     function run() external {
         vm.startBroadcast();
 
-        address polVault = 0x0000000000000000000000000000000000000000;
-        new POLTech(polVault);
+        new POLTech();
 
         vm.stopBroadcast();
     }

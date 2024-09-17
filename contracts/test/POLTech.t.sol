@@ -16,9 +16,8 @@ contract POLTechTest is Test {
         owner = address(this);
         addr1 = address(0x123);
         addr2 = address(0x456);
-        polVault = IBerachainRewardsVault(address(new MockVault()));
 
-        polTech = new POLTech(address(polVault));
+        polTech = new POLTech();
         stakingToken = polTech.stakingToken();
     }
 
