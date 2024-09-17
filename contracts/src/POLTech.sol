@@ -85,11 +85,10 @@ contract POLTech {
         // Update share price to the new price after purchase
         sharePrice[subject] = newPrice;
 
-        // Mint and stake new tokens
-        uint256 stakingAmount = amount * sharePrice[subject];
-        stakingToken.mint(address(this), stakingAmount);
-        stakingToken.approve(address(polVault), stakingAmount);
-        polVault.delegateStake(msg.sender, amount);
+        // Mint and stake according to the value of shares bought
+        stakingToken.mint(address(this), buyPrice);
+        stakingToken.approve(address(polVault), buyPrice);
+        polVault.delegateStake(msg.sender, buyPrice);
 
         emit SharesBought(msg.sender, subject, amount, sharePrice[subject]);
 
@@ -106,7 +105,7 @@ contract POLTech {
             "Not enough shares"
         );
 
-        (uint256 salePrice, uint256 newPrice) = getSellPrice(subject, amount);
+        (uint256 saleReturn, uint256 newPrice) = getSellPrice(subject, amount);
 
         sharesBalance[msg.sender][subject] -= amount;
         sharesSupply[subject] -= amount;
@@ -115,11 +114,10 @@ contract POLTech {
         sharePrice[subject] = newPrice;
 
         // Withdraw and burn tokens
-        uint256 stakingAmount = amount * sharePrice[subject];
-        polVault.delegateWithdraw(msg.sender, amount);
-        stakingToken.burn(address(this), stakingAmount);
+        polVault.delegateWithdraw(msg.sender, saleReturn);
+        stakingToken.burn(address(this), saleReturn);
 
-        (bool success, ) = msg.sender.call{value: salePrice}("");
+        (bool success, ) = msg.sender.call{value: saleReturn}("");
         require(success, "Transfer failed");
 
         emit SharesSold(msg.sender, subject, amount, sharePrice[subject]);
@@ -128,8 +126,8 @@ contract POLTech {
     function getBuyPrice(
         address subject,
         uint256 amount
-    ) public view returns (uint256, uint256) {
-        uint256 totalCost = 0;
+    ) public view returns (uint256 totalCost, uint256 endPrice) {
+        totalCost = 0;
         uint256 supply = sharesSupply[subject];
         uint256 price = supply == 0 ? INITIAL_SHARE_PRICE : sharePrice[subject];
 
@@ -144,9 +142,9 @@ contract POLTech {
     function getSellPrice(
         address subject,
         uint256 amount
-    ) public view returns (uint256, uint256) {
+    ) public view returns (uint256 totalReturn, uint256 endPrice) {
         require(sharesSupply[subject] >= amount, "Not enough shares in supply");
-        uint256 totalReturn = 0;
+        totalReturn = 0;
         uint256 price = sharePrice[subject];
 
         for (uint256 i = 0; i < amount; i++) {
@@ -165,7 +163,10 @@ contract POLTech {
     }
 
     function getSharePrice(address subject) external view returns (uint256) {
-        return sharePrice[subject];
+        return
+            sharePrice[subject] == 0
+                ? INITIAL_SHARE_PRICE
+                : sharePrice[subject];
     }
 
     function getSharesSupply(address subject) external view returns (uint256) {

@@ -7,10 +7,10 @@ import { Button } from "@/components/button";
 import { supabase } from "@/lib/supabase";
 
 type Message = {
-  id: number;
+  id: string;
   sender: string;
   content: string;
-  timestamp: number;
+  created_at: string;
 };
 
 type ChatWindowProps = {
@@ -20,19 +20,51 @@ type ChatWindowProps = {
 export default function ChatWindow({ subject }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [chatRoomId, setChatRoomId] = useState<string | null>(null);
   const { address } = useAccount();
 
   useEffect(() => {
-    // Fetch messages for the selected subject
-    fetchMessages(subject);
+    fetchOrCreateChatRoom(subject);
   }, [subject]);
 
-  const fetchMessages = async (subject: `0x${string}`) => {
+  useEffect(() => {
+    if (chatRoomId) {
+      fetchMessages(chatRoomId);
+      subscribeToNewMessages(chatRoomId);
+    }
+  }, [chatRoomId]);
+
+  const fetchOrCreateChatRoom = async (subject: `0x${string}`) => {
+    let { data: chatRoom } = await supabase
+      .from("chat_rooms")
+      .select("id")
+      .eq("subject", subject)
+      .single();
+
+    if (!chatRoom) {
+      const { data: newChatRoom, error } = await supabase
+        .from("chat_rooms")
+        .insert({ subject })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating chat room:", error);
+        return;
+      }
+
+      chatRoom = newChatRoom;
+    }
+
+    setChatRoomId(chatRoom?.id);
+  };
+
+  const fetchMessages = async (chatRoomId: string) => {
     const { data, error } = await supabase
       .from("messages")
       .select("*")
-      .eq("subject", subject)
-      .order("timestamp", { ascending: true });
+      .eq("chat_room_id", chatRoomId)
+      .order("created_at", { ascending: true });
 
     if (error) {
       console.error("Error fetching messages:", error);
@@ -42,26 +74,45 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
     setMessages(data || []);
   };
 
-  const sendMessage = async () => {
-    if (!address || !newMessage.trim()) return;
+  const subscribeToNewMessages = (chatRoomId: string) => {
+    const subscription = supabase
+      .channel(`chat_room:${chatRoomId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `chat_room_id=eq.${chatRoomId}`,
+        },
+        (payload) => {
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            payload.new as Message,
+          ]);
+        }
+      )
+      .subscribe();
 
-    const message: Message = {
-      id: Date.now(),
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  };
+
+  const sendMessage = async () => {
+    if (!address || !newMessage.trim() || !chatRoomId) return;
+
+    const { error } = await supabase.from("messages").insert({
+      chat_room_id: chatRoomId,
       sender: address,
       content: newMessage.trim(),
-      timestamp: Date.now(),
-    };
-
-    const { error } = await supabase
-      .from("messages")
-      .insert({ ...message, subject });
+    });
 
     if (error) {
       console.error("Error sending message:", error);
       return;
     }
 
-    setMessages([...messages, message]);
     setNewMessage("");
   };
 
@@ -84,7 +135,7 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
               </p>
               <p>{message.content}</p>
               <p className="text-xs text-gray-500">
-                {new Date(message.timestamp).toLocaleString()}
+                {new Date(message.created_at).toLocaleString()}
               </p>
             </span>
           </div>

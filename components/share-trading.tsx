@@ -1,114 +1,93 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useReadContract } from "wagmi";
-import { parseEther } from "viem";
+import { formatEther, parseEther } from "viem";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
+import { POLTECH_CONTRACT_ADDRESS } from "@/app/hooks/useShareTrading";
+import polTechABI from "@/lib/abi/polTech.json";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-const POL_TECH_ADDRESS = "0x0000000000ffe8b47b3e2130213b802212439497";
+type ShareTradingProps = {
+  initialSubject?: string;
+};
 
-const POL_TECH_ABI = [
-  {
-    type: "function",
-    name: "buyShares",
-    inputs: [{ name: "subject", type: "address" }],
-    outputs: [],
-    stateMutability: "payable",
-  },
-  {
-    type: "function",
-    name: "sellShares",
-    inputs: [
-      { name: "subject", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "getSharesBalance",
-    inputs: [
-      { name: "user", type: "address" },
-      { name: "subject", type: "address" },
-    ],
-    outputs: [{ type: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getBuyPrice",
-    inputs: [
-      { name: "subject", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    outputs: [{ type: "uint256" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "getSellPrice",
-    inputs: [
-      { name: "subject", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    outputs: [{ type: "uint256" }],
-    stateMutability: "view",
-  },
-] as const;
-
-export function ShareTrading() {
+export function ShareTrading({ initialSubject }: ShareTradingProps) {
   const [subjectAddress, setSubjectAddress] = useState<`0x${string}`>(
-    "0xf290f3d843826d00f8176182fd76550535f6dbb4"
+    (initialSubject as `0x${string}`) ||
+      "0xf290f3d843826d00f8176182fd76550535f6dbb4"
   );
   const [amount, setAmount] = useState("");
-  const account = useAccount();
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const { address } = useAccount();
+
+  useEffect(() => {
+    if (initialSubject) {
+      setSubjectAddress(initialSubject as `0x${string}`);
+    }
+  }, [initialSubject]);
 
   const { data: sharesBalance } = useReadContract({
-    address: POL_TECH_ADDRESS,
-    abi: POL_TECH_ABI,
+    address: POLTECH_CONTRACT_ADDRESS,
+    abi: polTechABI.abi,
     functionName: "getSharesBalance",
-    args: [account.address ?? "0x0", subjectAddress],
+    args: [address ?? "0x0", subjectAddress],
   });
 
   const { data: buyPriceData } = useReadContract({
-    address: POL_TECH_ADDRESS,
-    abi: POL_TECH_ABI,
+    address: POLTECH_CONTRACT_ADDRESS,
+    abi: polTechABI.abi,
     functionName: "getBuyPrice",
-    args: [subjectAddress, parseEther(amount)],
-  });
+    args: [subjectAddress, amount || "0"],
+  }) as { data: [bigint, bigint] | undefined };
 
   const { data: sellPriceData } = useReadContract({
-    address: POL_TECH_ADDRESS,
-    abi: POL_TECH_ABI,
+    address: POLTECH_CONTRACT_ADDRESS,
+    abi: polTechABI.abi,
     functionName: "getSellPrice",
-    args: [subjectAddress, parseEther(amount)],
-  });
+    args: [subjectAddress, amount || "0"],
+  }) as { data: [bigint, bigint] | undefined };
 
-  const { writeContract } = useWriteContract();
+  const { writeContractAsync } = useWriteContract();
 
-  const handleBuy = () => {
+  const handleBuy = async () => {
     if (subjectAddress && buyPriceData) {
-      const [buyPrice] = buyPriceData;
-      writeContract({
-        address: POL_TECH_ADDRESS,
-        abi: POL_TECH_ABI,
-        functionName: "buyShares",
-        args: [subjectAddress, parseEther(amount)],
-        value: buyPrice,
-      });
+      const [totalPrice] = buyPriceData;
+      try {
+        const result = await writeContractAsync({
+          address: POLTECH_CONTRACT_ADDRESS,
+          abi: polTechABI.abi,
+          functionName: "buyShares",
+          args: [subjectAddress, amount],
+          value: totalPrice,
+        });
+        console.log({ result });
+        setTxHash(result);
+      } catch (error) {
+        console.error("Error buying shares:", error);
+      }
     }
   };
 
-  const handleSell = () => {
+  const handleSell = async () => {
     if (subjectAddress && amount) {
-      writeContract({
-        address: POL_TECH_ADDRESS,
-        abi: POL_TECH_ABI,
-        functionName: "sellShares",
-        args: [subjectAddress, parseEther(amount)],
-      });
+      try {
+        const result = await writeContractAsync({
+          address: POLTECH_CONTRACT_ADDRESS,
+          abi: polTechABI.abi,
+          functionName: "sellShares",
+          args: [subjectAddress, parseEther(amount)],
+        });
+        setTxHash(result);
+      } catch (error) {
+        console.error("Error selling shares:", error);
+      }
     }
+  };
+
+  const calculateKeyValue = (price: bigint) => {
+    const amountBigInt = parseEther(amount || "0");
+    return (price * amountBigInt) / parseEther("1");
   };
 
   return (
@@ -121,20 +100,70 @@ export function ShareTrading() {
           placeholder="Subject Address"
           value={subjectAddress}
           onChange={(e) => setSubjectAddress(e.target.value as `0x${string}`)}
+          className="mb-4"
         />
-        <Input
-          placeholder="Amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-        <Button onClick={handleBuy}>Buy Shares</Button>
-        <Button onClick={handleSell}>Sell Shares</Button>
         {sharesBalance && (
-          <p>Your shares balance: {sharesBalance.toString()}</p>
+          <p className="mb-4">
+            Your shares balance: {sharesBalance.toString()} keys
+          </p>
         )}
-        {buyPriceData && <p>Buy Price: {formatEther(buyPriceData[0])} BERA</p>}
-        {sellPriceData && (
-          <p>Sell Price: {formatEther(sellPriceData[0])} BERA</p>
+        <Tabs defaultValue="buy">
+          <TabsList>
+            <TabsTrigger value="buy">Buy</TabsTrigger>
+            <TabsTrigger value="sell">Sell</TabsTrigger>
+          </TabsList>
+          <TabsContent value="buy">
+            <Input
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="mb-4"
+            />
+            {buyPriceData && (
+              <div className="mb-4">
+                <p>Total Buy Price: {formatEther(buyPriceData[0])} BERA</p>
+                <p>
+                  End Key Value:{" "}
+                  {formatEther(calculateKeyValue(buyPriceData[1]))} BERA
+                </p>
+              </div>
+            )}
+            <Button disabled={!buyPriceData} onClick={handleBuy}>
+              Buy Shares
+            </Button>
+          </TabsContent>
+          <TabsContent value="sell">
+            <Input
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="mb-4"
+            />
+            {sellPriceData && (
+              <div className="mb-4">
+                <p>Total Sell Price: {formatEther(sellPriceData[0])} BERA</p>
+                <p>
+                  End Key Value:{" "}
+                  {formatEther(calculateKeyValue(sellPriceData[1]))} BERA
+                </p>
+              </div>
+            )}
+            <Button disabled={!sellPriceData} onClick={handleSell}>
+              Sell Shares
+            </Button>
+          </TabsContent>
+        </Tabs>
+        {txHash && (
+          <div className="mt-4">
+            <Button
+              as="a"
+              href={`https://bartio.beratrail.io/tx/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View Transaction
+            </Button>
+          </div>
         )}
       </CardContent>
     </Card>

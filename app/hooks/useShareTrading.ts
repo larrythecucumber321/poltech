@@ -1,15 +1,15 @@
 import { useReadContract } from "wagmi";
 import polTechABI from "@/lib/abi/polTech.json";
 
-const POL_TECH_CONTRACT_ADDRESS =
-  "0x1234567890123456789012345678901234567890" as const;
+export const POLTECH_CONTRACT_ADDRESS =
+  "0xc00A733cF559b1311d956dA2BCEd7231901fD7Aa" as `0x${string}`;
 
 export function useGetSharesBalance(
   user: `0x${string}`,
   subject: `0x${string}`
 ) {
   return useReadContract({
-    address: POL_TECH_CONTRACT_ADDRESS,
+    address: POLTECH_CONTRACT_ADDRESS,
     abi: polTechABI.abi,
     functionName: "getSharesBalance",
     args: [user, subject],
@@ -18,7 +18,7 @@ export function useGetSharesBalance(
 
 export function useGetSharePrice(subject: `0x${string}`) {
   return useReadContract({
-    address: POL_TECH_CONTRACT_ADDRESS,
+    address: POLTECH_CONTRACT_ADDRESS,
     abi: polTechABI.abi,
     functionName: "getSharePrice",
     args: [subject],
