@@ -37,8 +37,11 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
     if (chatRoomId) {
       fetchMessages(chatRoomId);
       const subscription = subscribeToNewMessages(chatRoomId);
+      const pollInterval = setInterval(() => fetchMessages(chatRoomId), 5000); // Poll every 5 seconds
+
       return () => {
         subscription.unsubscribe();
+        clearInterval(pollInterval);
       };
     }
   }, [chatRoomId]);
@@ -205,15 +208,18 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
           <div
             key={message.id}
             className={`flex ${
-              message.sender === address ? "justify-end" : "justify-start"
+              message.sender.toLowerCase() === address?.toLowerCase()
+                ? "justify-end"
+                : "justify-start"
             }`}
           >
             <div
-              className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                message.sender === address
+              className={cn(
+                "max-w-[70%] rounded-lg px-4 py-2",
+                message.sender.toLowerCase() === address?.toLowerCase()
                   ? "bg-primary-light dark:bg-primary-dark text-foreground dark:text-foreground"
                   : "bg-secondary dark:bg-secondary-dark text-foreground dark:text-foreground-dark"
-              }`}
+              )}
             >
               <p className="font-semibold text-sm">
                 {message.sender.slice(0, 6)}...{message.sender.slice(-4)}
