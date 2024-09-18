@@ -147,10 +147,10 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
 
   return (
     <div className="flex flex-col h-full bg-gray-100 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4 p-4 bg-gray-200 rounded-t-lg">
+      <h2 className="text-xl font-bold p-4 bg-gray-200 rounded-t-lg">
         Chat with {subject.slice(0, 6)}...{subject.slice(-4)}
       </h2>
-      <div className="flex-1 overflow-y-auto mb-4 p-4">
+      <div className="flex-1 overflow-y-auto p-4">
         {messages.map((message) => (
           <div
             key={message.id}

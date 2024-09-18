@@ -91,7 +91,7 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
   };
 
   return (
-    <Card>
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Trade Shares</CardTitle>
       </CardHeader>
