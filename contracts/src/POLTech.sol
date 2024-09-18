@@ -46,21 +46,22 @@ contract POLTech {
     PoLStakingToken public immutable stakingToken;
 
     uint256 public constant INITIAL_SHARE_PRICE = 1e17; // 0.1 BERA
-    uint256 public constant SHARE_PRICE_MULTIPLIER = 11e17; // 1.1
-    uint256 public constant SHARE_PRICE_DIVIDER = 9e17; // 0.9
+    uint256 public constant PRICE_CHANGE_FACTOR = 5e16; // 0.05 BERA
 
     event SharesBought(
         address indexed buyer,
         address indexed subject,
         uint256 amount,
-        uint256 price
+        uint256 totalPrice,
+        uint256 endPrice
     );
 
     event SharesSold(
         address indexed seller,
         address indexed subject,
         uint256 amount,
-        uint256 price
+        uint256 totalReturn,
+        uint256 endPrice
     );
 
     constructor() {
@@ -91,7 +92,7 @@ contract POLTech {
         stakingToken.approve(address(polVault), buyPrice);
         polVault.delegateStake(msg.sender, buyPrice);
 
-        emit SharesBought(msg.sender, subject, amount, sharePrice[subject]);
+        emit SharesBought(msg.sender, subject, amount, buyPrice, newPrice);
 
         // Refund excess payment
         if (msg.value > buyPrice) {
@@ -105,6 +106,8 @@ contract POLTech {
             sharesBalance[msg.sender][subject] >= amount,
             "Not enough shares"
         );
+
+        require(sharesSupply[subject] >= amount, "Not enough shares in supply");
 
         (uint256 saleReturn, uint256 newPrice) = getSellPrice(subject, amount);
 
@@ -121,22 +124,23 @@ contract POLTech {
         (bool success, ) = msg.sender.call{value: saleReturn}("");
         require(success, "Transfer failed");
 
-        emit SharesSold(msg.sender, subject, amount, sharePrice[subject]);
+        emit SharesSold(msg.sender, subject, amount, saleReturn, newPrice);
     }
 
     function getBuyPrice(
         address subject,
         uint256 amount
     ) public view returns (uint256 totalCost, uint256 endPrice) {
-        totalCost = 0;
         uint256 price = getSharePrice(subject);
 
+        totalCost = 0;
         for (uint256 i = 0; i < amount; i++) {
             totalCost += price;
-            price = (price * SHARE_PRICE_MULTIPLIER) / 1e18;
+            price = price + PRICE_CHANGE_FACTOR;
         }
 
-        return (totalCost, price);
+        endPrice = price;
+        return (totalCost, endPrice);
     }
 
     function getSellPrice(
@@ -144,15 +148,17 @@ contract POLTech {
         uint256 amount
     ) public view returns (uint256 totalReturn, uint256 endPrice) {
         require(sharesSupply[subject] >= amount, "Not enough shares in supply");
-        totalReturn = 0;
+
         uint256 price = getSharePrice(subject);
 
+        totalReturn = 0;
         for (uint256 i = 0; i < amount; i++) {
+            price = price - PRICE_CHANGE_FACTOR;
             totalReturn += price;
-            price = (price * SHARE_PRICE_DIVIDER) / 1e18;
         }
 
-        return (totalReturn, price);
+        endPrice = price;
+        return (totalReturn, endPrice);
     }
 
     function getSharesBalance(
@@ -163,10 +169,8 @@ contract POLTech {
     }
 
     function getSharePrice(address subject) public view returns (uint256) {
-        return
-            sharePrice[subject] == 0
-                ? INITIAL_SHARE_PRICE
-                : sharePrice[subject];
+        uint256 supply = sharesSupply[subject];
+        return INITIAL_SHARE_PRICE + (supply * PRICE_CHANGE_FACTOR);
     }
 
     function getSharesSupply(address subject) external view returns (uint256) {
