@@ -121,18 +121,24 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
 
   const sendMessage = async () => {
     if (!address || !newMessage.trim() || !chatRoomId) return;
-    const { error } = await supabase.from("messages").insert({
-      chat_room_id: chatRoomId,
-      sender: address.toLowerCase(),
-      content: newMessage.trim(),
-    });
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({
+        chat_room_id: chatRoomId,
+        sender: address.toLowerCase(),
+        content: newMessage.trim(),
+      })
+      .select();
 
     if (error) {
       console.error("Error sending message:", error);
       return;
     }
 
-    setNewMessage("");
+    if (data) {
+      setMessages((prevMessages) => [...prevMessages, data[0] as Message]);
+      setNewMessage("");
+    }
   };
 
   if (!sharesBalance || sharesBalance === 0n) {
@@ -145,24 +151,33 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
     );
   }
 
+  console.log(sharesBalance);
+
   return (
-    <div className="flex flex-col h-full bg-gray-100 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold p-4 bg-gray-200 rounded-t-lg">
-        Chat with {subject.slice(0, 6)}...{subject.slice(-4)}
+    <div className="flex flex-col h-full bg-background dark:bg-background-dark rounded-lg shadow-md">
+      <h2 className="text-xl font-bold p-4 bg-primary text-foreground dark:text-foreground-dark rounded-t-lg flex justify-between items-center">
+        <span>
+          Chat with {subject.slice(0, 6)}...{subject.slice(-4)}
+        </span>
+        {sharesBalance && sharesBalance > 0n && (
+          <span className="text-sm bg-accent dark:bg-accent-dark text-foreground dark:text-foreground-dark px-2 py-1 rounded-full">
+            {sharesBalance.toString()} keys
+          </span>
+        )}
       </h2>
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`mb-2 flex ${
+            className={`flex ${
               message.sender === address ? "justify-end" : "justify-start"
             }`}
           >
             <div
               className={`max-w-[70%] rounded-lg px-4 py-2 ${
                 message.sender === address
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-300 text-gray-800"
+                  ? "bg-primary-light dark:bg-primary-dark text-foreground dark:text-foreground-dark"
+                  : "bg-secondary dark:bg-secondary-dark text-foreground dark:text-foreground-dark"
               }`}
             >
               <p className="font-semibold text-sm">
@@ -177,15 +192,20 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <div className="flex p-4 bg-gray-200 rounded-b-lg">
+      <div className="flex p-4 bg-border dark:bg-border-dark rounded-b-lg">
         <Input
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Type your message..."
-          className="flex-1 mr-2"
+          className="flex-1 mr-2 bg-background dark:bg-background-dark text-foreground dark:text-foreground-dark border-primary dark:border-primary-dark"
         />
-        <Button onClick={sendMessage}>Send</Button>
+        <Button
+          onClick={sendMessage}
+          className="bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-foreground dark:text-foreground-dark"
+        >
+          Send
+        </Button>
       </div>
     </div>
   );

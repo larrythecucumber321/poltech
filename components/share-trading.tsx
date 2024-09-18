@@ -48,6 +48,7 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
     args: [subjectAddress, amount || "0"],
   }) as { data: [bigint, bigint] | undefined };
 
+  console.log({ sharesBalance, buyPriceData, sellPriceData });
   const { writeContractAsync } = useWriteContract();
 
   const handleBuy = async () => {
@@ -76,18 +77,13 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
           address: POLTECH_CONTRACT_ADDRESS,
           abi: polTechABI.abi,
           functionName: "sellShares",
-          args: [subjectAddress, parseEther(amount)],
+          args: [subjectAddress, amount],
         });
         setTxHash(result);
       } catch (error) {
         console.error("Error selling shares:", error);
       }
     }
-  };
-
-  const calculateKeyValue = (price: bigint) => {
-    const amountBigInt = parseEther(amount || "0");
-    return (price * amountBigInt) / parseEther("1");
   };
 
   return (
@@ -102,15 +98,19 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
           onChange={(e) => setSubjectAddress(e.target.value as `0x${string}`)}
           className="mb-4"
         />
-        {sharesBalance && (
-          <p className="mb-4">
-            Your shares balance: {sharesBalance.toString()} keys
-          </p>
-        )}
+
+        <p className="mb-4">
+          Your shares balance: {sharesBalance?.toString() || "0"}
+        </p>
+
         <Tabs defaultValue="buy">
           <TabsList>
-            <TabsTrigger value="buy">Buy</TabsTrigger>
-            <TabsTrigger value="sell">Sell</TabsTrigger>
+            <TabsTrigger onClick={() => setAmount("")} value="buy">
+              Buy
+            </TabsTrigger>
+            <TabsTrigger onClick={() => setAmount("")} value="sell">
+              Sell
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="buy">
             <Input
@@ -123,8 +123,8 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
               <div className="mb-4">
                 <p>Total Buy Price: {formatEther(buyPriceData[0])} BERA</p>
                 <p>
-                  End Key Value:{" "}
-                  {formatEther(calculateKeyValue(buyPriceData[1]))} BERA
+                  {+amount ? `End` : `Current`} Share Value:{" "}
+                  {formatEther(buyPriceData[1])} BERA
                 </p>
               </div>
             )}
@@ -143,8 +143,8 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
               <div className="mb-4">
                 <p>Total Sell Price: {formatEther(sellPriceData[0])} BERA</p>
                 <p>
-                  End Key Value:{" "}
-                  {formatEther(calculateKeyValue(sellPriceData[1]))} BERA
+                  {+amount ? `End` : `Current`} Share Value:{" "}
+                  {formatEther(sellPriceData[1])} BERA
                 </p>
               </div>
             )}

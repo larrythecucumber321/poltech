@@ -55,6 +55,7 @@ contract POLTech {
         uint256 amount,
         uint256 price
     );
+
     event SharesSold(
         address indexed seller,
         address indexed subject,
@@ -128,8 +129,7 @@ contract POLTech {
         uint256 amount
     ) public view returns (uint256 totalCost, uint256 endPrice) {
         totalCost = 0;
-        uint256 supply = sharesSupply[subject];
-        uint256 price = supply == 0 ? INITIAL_SHARE_PRICE : sharePrice[subject];
+        uint256 price = getSharePrice(subject);
 
         for (uint256 i = 0; i < amount; i++) {
             totalCost += price;
@@ -145,7 +145,7 @@ contract POLTech {
     ) public view returns (uint256 totalReturn, uint256 endPrice) {
         require(sharesSupply[subject] >= amount, "Not enough shares in supply");
         totalReturn = 0;
-        uint256 price = sharePrice[subject];
+        uint256 price = getSharePrice(subject);
 
         for (uint256 i = 0; i < amount; i++) {
             totalReturn += price;
@@ -162,7 +162,7 @@ contract POLTech {
         return sharesBalance[user][subject];
     }
 
-    function getSharePrice(address subject) external view returns (uint256) {
+    function getSharePrice(address subject) public view returns (uint256) {
         return
             sharePrice[subject] == 0
                 ? INITIAL_SHARE_PRICE
