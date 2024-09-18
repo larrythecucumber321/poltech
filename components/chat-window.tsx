@@ -3,9 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
 import { Input } from "@/components/input";
-import { Button } from "@/components/button";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { useGetSharesBalance } from "@/app/hooks/useShareTrading";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 type Message = {
   id: string;
@@ -26,7 +28,7 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { data: sharesBalance } = useGetSharesBalance(address || "0x", subject);
   useEffect(() => {
-    if (sharesBalance && sharesBalance >= 1n) {
+    if (sharesBalance && sharesBalance > 0n) {
       fetchOrCreateChatRoom(subject);
     }
   }, [subject, sharesBalance]);
@@ -50,7 +52,7 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
   };
   const fetchOrCreateChatRoom = async (subject: `0x${string}`) => {
     // Fetch all chat rooms
-    let { data: chatRooms, error } = await supabase
+    const { data: chatRooms, error } = await supabase
       .from("chat_rooms")
       .select("*")
       .ilike("subject", `%${subject}%`);
@@ -141,29 +143,62 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
     }
   };
 
+  const SharesCount = () => (
+    <span className="text-sm bg-accent dark:bg-accent-dark text-background dark:text-background-dark px-2 py-1 rounded-full">
+      {sharesBalance?.toString() || "0"} shares
+    </span>
+  );
+
+  const TradeKeyButton = ({
+    subject,
+    noKeys,
+  }: {
+    subject: `0x${string}`;
+    noKeys: boolean;
+  }) => (
+    <Link href={`/wallet?subject=${subject}`} passHref>
+      <Button
+        className={cn(
+          "text-sm",
+          noKeys
+            ? "bg-accent hover:bg-accent-dark text-background dark:text-background-dark"
+            : "bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-foreground dark:text-foreground-dark"
+        )}
+      >
+        Trade Key
+      </Button>
+    </Link>
+  );
+
   if (!sharesBalance || sharesBalance === 0n) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-lg text-gray-500">
+      <div className="flex items-center justify-center flex-col h-full bg-background dark:bg-background-dark rounded-lg shadow-md border border-border dark:border-border-dark">
+        <h2 className="text-xl font-bold p-4 text-foreground dark:text-foreground-dark rounded-t-lg flex justify-between items-center">
+          <span>
+            Chat with {subject.slice(0, 6)}...{subject.slice(-4)}
+          </span>
+        </h2>
+        <p className="text-lg text-foreground dark:text-foreground-dark mb-4">
           You need to own at least one share to access this chat.
         </p>
+        <SharesCount />
+        <div className="mt-4">
+          <TradeKeyButton subject={subject} noKeys={true} />
+        </div>
       </div>
     );
   }
 
-  console.log(sharesBalance);
-
   return (
-    <div className="flex flex-col h-full bg-background dark:bg-background-dark rounded-lg shadow-md">
+    <div className="flex flex-col h-full bg-background dark:bg-background-dark rounded-lg shadow-md border border-border dark:border-border-dark">
       <h2 className="text-xl font-bold p-4 bg-primary text-foreground dark:text-foreground-dark rounded-t-lg flex justify-between items-center">
         <span>
           Chat with {subject.slice(0, 6)}...{subject.slice(-4)}
         </span>
-        {sharesBalance && sharesBalance > 0n && (
-          <span className="text-sm bg-accent dark:bg-accent-dark text-foreground dark:text-foreground-dark px-2 py-1 rounded-full">
-            {sharesBalance.toString()} keys
-          </span>
-        )}
+        <div className="flex items-center space-x-2">
+          <SharesCount />
+          <TradeKeyButton subject={subject} noKeys={false} />
+        </div>
       </h2>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
@@ -176,7 +211,7 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
             <div
               className={`max-w-[70%] rounded-lg px-4 py-2 ${
                 message.sender === address
-                  ? "bg-primary-light dark:bg-primary-dark text-foreground dark:text-foreground-dark"
+                  ? "bg-primary-light dark:bg-primary-dark text-foreground dark:text-foreground"
                   : "bg-secondary dark:bg-secondary-dark text-foreground dark:text-foreground-dark"
               }`}
             >

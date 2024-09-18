@@ -134,6 +134,7 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
           </TabsContent>
           <TabsContent value="sell">
             <Input
+              disabled={!sharesBalance}
               placeholder="Amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}

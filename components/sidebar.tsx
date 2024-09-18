@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type SidebarProps = {
   open: boolean;
@@ -28,59 +29,59 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   }, [open, onClose]);
 
   return (
-    <aside
+    <div
       ref={sidebarRef}
-      className={`fixed inset-y-0 left-0 z-50 w-64 bg-background dark:bg-background-dark transform ${
+      className={`fixed inset-y-0 left-0 z-50 w-64 bg-background dark:bg-background-dark text-foreground dark:text-foreground-dark transform ${
         open ? "translate-x-0" : "-translate-x-full"
-      } transition-transform duration-300 ease-in-out md:relative md:translate-x-0`}
+      } transition-transform duration-300 ease-in-out md:relative md:translate-x-0 border-r border-border dark:border-border-dark`}
     >
-      <div className="flex items-center justify-between p-4">
-        <h2 className="font-mono text-3xl text-primary dark:text-primary-dark font-bold">
-          PoL Tech
+      <div className="flex justify-between items-center p-4 bg-primary dark:bg-primary-dark">
+        <h2 className="text-xl font-bold text-background dark:text-background-dark">
+          Menu
         </h2>
-        <button
+        <Button
           onClick={onClose}
-          className="md:hidden text-primary dark:text-primary-dark"
+          className="text-background dark:text-background-dark md:hidden hover:bg-primary-light dark:hover:bg-primary"
         >
           <X size={24} />
-        </button>
+        </Button>
       </div>
-      <nav className="mt-8">
-        <ul className="text-primary dark:text-primary-dark">
-          <li className="mb-2">
+      <nav className="mt-4">
+        <ul className="space-y-2">
+          <li>
             <Link
               href="/"
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block px-4 py-2 hover:bg-secondary hover:text-foreground dark:hover:bg-secondary-dark dark:hover:text-foreground-dark"
             >
               Home
             </Link>
           </li>
-          <li className="mb-2">
+          <li>
             <Link
               href="/wallet"
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block px-4 py-2 hover:bg-secondary hover:text-foreground dark:hover:bg-secondary-dark dark:hover:text-foreground-dark"
             >
               Wallet
             </Link>
           </li>
-          <li className="mb-2">
+          <li>
             <Link
               href="/chat"
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block px-4 py-2 hover:bg-secondary hover:text-foreground dark:hover:bg-secondary-dark dark:hover:text-foreground-dark"
             >
               Chat
             </Link>
           </li>
-          <li className="mb-2">
+          <li>
             <Link
               href="/discover"
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block px-4 py-2 hover:bg-secondary hover:text-foreground dark:hover:bg-secondary-dark dark:hover:text-foreground-dark"
             >
               Discover
             </Link>
           </li>
         </ul>
       </nav>
-    </aside>
+    </div>
   );
 }

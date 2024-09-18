@@ -7,7 +7,7 @@ type ChatListProps = {
 
 export default function ChatList({ subjects, onSelectSubject }: ChatListProps) {
   return (
-    <div>
+    <div className="space-y-4">
       {subjects.map((subject) => (
         <ChatItem key={subject} subject={subject} onSelect={onSelectSubject} />
       ))}
@@ -26,17 +26,21 @@ function ChatItem({
 
   return (
     <div
-      className="flex items-center p-2 border-b cursor-pointer hover:bg-gray-100"
+      className="flex items-center p-4 border-2 border-border dark:border-border-dark rounded-lg cursor-pointer hover:bg-secondary dark:hover:bg-secondary-dark transition-colors duration-200"
       onClick={() => onSelect(subject)}
     >
       <div className="flex-1">
-        <h3 className="font-semibold">
+        <h3 className="text-lg font-semibold text-foreground dark:text-foreground-dark mb-2">
           Subject: {subject.slice(0, 6)}...{subject.slice(-4)}
         </h3>
-        <p className="text-sm text-gray-500">
+        <p className="text-base text-primary dark:text-primary-dark">
           Share Price:{" "}
-          {sharePrice ? parseFloat(sharePrice.toString()) / 1e18 : "Loading..."}{" "}
-          BERA
+          <span className="font-medium">
+            {sharePrice
+              ? parseFloat(sharePrice.toString()) / 1e18
+              : "Loading..."}{" "}
+            BERA
+          </span>
         </p>
       </div>
     </div>

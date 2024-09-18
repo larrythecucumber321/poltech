@@ -20,9 +20,11 @@ export default function RootLayout({
 
   return (
     <html lang="en" className="dark">
-      <body className={inter.className}>
+      <body
+        className={`${inter.className} bg-background dark:bg-background-dark text-foreground dark:text-foreground-dark`}
+      >
         <Web3Provider>
-          <div className="flex h-screen overflow-hidden bg-background text-foreground">
+          <div className="flex h-screen overflow-hidden">
             <Sidebar open={sidebarOpen} onClose={closeSidebar} />
             <div className="flex flex-col flex-1 overflow-hidden">
               <Header onMenuClick={() => setSidebarOpen(true)} />
