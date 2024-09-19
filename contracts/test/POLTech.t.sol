@@ -146,6 +146,113 @@ contract POLTechTest is Test {
 
         vm.stopPrank();
     }
+
+    function testMultipleBuysAndSells() public {
+        address buyer1 = address(0x123);
+        address buyer2 = address(0x456);
+        address subject = address(0x789);
+
+        vm.startPrank(buyer1);
+        vm.deal(buyer1, 10 ether);
+
+        // Buy 5 shares for buyer1
+        (uint256 buyPrice1, ) = polTech.getBuyPrice(subject, 5);
+        polTech.buyShares{value: buyPrice1}(subject, 5);
+
+        // Buy 3 more shares for buyer1
+        (uint256 buyPrice2, ) = polTech.getBuyPrice(subject, 3);
+        polTech.buyShares{value: buyPrice2}(subject, 3);
+
+        vm.stopPrank();
+
+        // Introduce a second buyer (buyer2)
+        vm.startPrank(buyer2);
+        vm.deal(buyer2, 10 ether);
+
+        // Buy 2 shares for buyer2
+        (uint256 buyPrice3, ) = polTech.getBuyPrice(subject, 2);
+        polTech.buyShares{value: buyPrice3}(subject, 2);
+
+        vm.stopPrank();
+
+        // Back to buyer1
+        vm.startPrank(buyer1);
+
+        // Verify total shares for buyer1
+        assertEq(polTech.getSharesBalance(buyer1, subject), 8);
+
+        // Sell 2 shares for buyer1
+        uint256 balanceBefore = buyer1.balance;
+        polTech.sellShares(subject, 2);
+        uint256 balanceAfter = buyer1.balance;
+
+        // Verify remaining shares for buyer1
+        assertEq(polTech.getSharesBalance(buyer1, subject), 6);
+
+        // Verify received amount is greater than initial stake for 2 shares
+        assertGt(balanceAfter - balanceBefore, (buyPrice1 * 2) / 5);
+
+        // Verify lots for buyer1
+        (uint256 lot1Shares, uint256 lot1Stake) = polTech.shareLots(
+            buyer1,
+            subject,
+            0
+        );
+        (uint256 lot2Shares, uint256 lot2Stake) = polTech.shareLots(
+            buyer1,
+            subject,
+            1
+        );
+
+        assertEq(lot1Shares, 3, "First lot should have 3 shares remaining");
+        assertEq(lot2Shares, 3, "Second lot should still have 3 shares");
+        assertLt(lot1Stake, buyPrice1, "First lot stake should be reduced");
+        assertEq(
+            lot2Stake,
+            buyPrice2,
+            "Second lot stake should remain unchanged"
+        );
+
+        // Verify total shares for buyer2
+        assertEq(polTech.getSharesBalance(buyer2, subject), 2);
+
+        // Verify lot for buyer2
+        (uint256 lot3Shares, uint256 lot3Stake) = polTech.shareLots(
+            buyer2,
+            subject,
+            0
+        );
+        assertEq(lot3Shares, 2, "buyer2's lot should have 2 shares");
+        assertEq(
+            lot3Stake,
+            buyPrice3,
+            "buyer2's lot stake should match their buy price"
+        );
+
+        // Verify that buyer2's buy price is higher than buyer1's first buy price (per share)
+        assertGt(
+            buyPrice3 / 2,
+            buyPrice1 / 5,
+            "buyer2's per-share price should be higher than buyer1's first buy"
+        );
+
+        // Verify that the total share supply has increased correctly
+        assertEq(
+            polTech.getSharesSupply(subject),
+            8,
+            "Total share supply should be 8"
+        );
+
+        // Verify that the share price has increased
+        uint256 finalSharePrice = polTech.getSharePrice(subject);
+        assertGt(
+            finalSharePrice,
+            polTech.INITIAL_SHARE_PRICE(),
+            "Share price should have increased"
+        );
+
+        vm.stopPrank();
+    }
 }
 
 contract MockVault is IBerachainRewardsVault {
@@ -163,16 +270,14 @@ contract MockVault is IBerachainRewardsVault {
         balances[account] -= amount;
     }
 
-    function balanceOf(
-        address account
-    ) external view override returns (uint256) {
+    function balanceOf(address account) external view returns (uint256) {
         return balances[account];
     }
 
     function getDelegateStake(
         address account,
         address delegate
-    ) external view override returns (uint256) {
+    ) external view returns (uint256) {
         return balances[account];
     }
 }
