@@ -1,8 +1,13 @@
 import { useState, useEffect } from "react";
-import { useAccount, useWriteContract, useReadContract } from "wagmi";
+import {
+  useAccount,
+  useWriteContract,
+  useReadContract,
+  useWaitForTransactionReceipt,
+} from "wagmi";
 import { formatEther } from "viem";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/input";
+import { Input } from "@/components/ui/input";
 import { POLTECH_CONTRACT_ADDRESS } from "@/app/hooks/useShareTrading";
 import polTechABI from "@/lib/abi/polTech.json";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,51 +22,55 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
       "0xf290f3d843826d00f8176182fd76550535f6dbb4"
   );
   const [amount, setAmount] = useState("");
-  const [txHash, setTxHash] = useState<string | null>(null);
   const { address } = useAccount();
 
-  useEffect(() => {
-    if (initialSubject) {
-      setSubjectAddress(initialSubject as `0x${string}`);
-    }
-  }, [initialSubject]);
+  const { writeContract, data: hash } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash,
+    });
 
-  const { data: sharesBalance } = useReadContract({
-    address: POLTECH_CONTRACT_ADDRESS,
-    abi: polTechABI.abi,
-    functionName: "getSharesBalance",
-    args: [address ?? "0x0", subjectAddress],
-  });
+  const { data: sharesBalance, refetch: refetchSharesBalance } =
+    useReadContract({
+      address: POLTECH_CONTRACT_ADDRESS,
+      abi: polTechABI.abi,
+      functionName: "getSharesBalance",
+      args: [address ?? "0x0", subjectAddress],
+    });
 
-  const { data: buyPriceData } = useReadContract({
+  const { data: buyPriceData, refetch: refetchBuyPrice } = useReadContract({
     address: POLTECH_CONTRACT_ADDRESS,
     abi: polTechABI.abi,
     functionName: "getBuyPrice",
     args: [subjectAddress, amount || "0"],
-  }) as { data: [bigint, bigint] | undefined };
+  }) as { data: [bigint, bigint] | undefined; refetch: () => void };
 
-  const { data: sellPriceData } = useReadContract({
+  const { data: sellPriceData, refetch: refetchSellPrice } = useReadContract({
     address: POLTECH_CONTRACT_ADDRESS,
     abi: polTechABI.abi,
     functionName: "getSellPrice",
     args: [subjectAddress, amount || "0"],
-  }) as { data: [bigint, bigint] | undefined };
+  }) as { data: [bigint, bigint] | undefined; refetch: () => void };
 
-  const { writeContractAsync } = useWriteContract();
+  useEffect(() => {
+    if (isConfirmed) {
+      refetchSharesBalance();
+      refetchBuyPrice();
+      refetchSellPrice();
+    }
+  }, [isConfirmed]);
 
   const handleBuy = async () => {
     if (subjectAddress && buyPriceData) {
       const [totalPrice] = buyPriceData;
       try {
-        const result = await writeContractAsync({
+        await writeContract({
           address: POLTECH_CONTRACT_ADDRESS,
           abi: polTechABI.abi,
           functionName: "buyShares",
           args: [subjectAddress, amount],
           value: totalPrice,
         });
-        console.log({ result });
-        setTxHash(result);
       } catch (error) {
         console.error("Error buying shares:", error);
       }
@@ -71,13 +80,12 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
   const handleSell = async () => {
     if (subjectAddress && amount) {
       try {
-        const result = await writeContractAsync({
+        await writeContract({
           address: POLTECH_CONTRACT_ADDRESS,
           abi: polTechABI.abi,
           functionName: "sellShares",
           args: [subjectAddress, amount],
         });
-        setTxHash(result);
       } catch (error) {
         console.error("Error selling shares:", error);
       }
@@ -123,11 +131,11 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
             </div>
           )}
           <Button
-            disabled={!buyPriceData}
+            disabled={!buyPriceData || isConfirming}
             onClick={handleBuy}
             className="w-full bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-background dark:text-background-dark"
           >
-            Buy Shares
+            {isConfirming ? "Confirming..." : "Buy Shares"}
           </Button>
         </TabsContent>
         <TabsContent value="sell">
@@ -156,12 +164,12 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
           </Button>
         </TabsContent>
       </Tabs>
-      {txHash && (
+      {hash && (
         <div className="mt-4">
           <Button
             onClick={() =>
               window.open(
-                `https://bartio.beratrail.io/tx/${txHash}`,
+                `https://bartio.beratrail.io/tx/${hash}`,
                 "_blank",
                 "noopener,noreferrer"
               )

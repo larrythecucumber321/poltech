@@ -102,7 +102,10 @@ function SubjectCard({
   const { data: sharePrice } = useGetSharePrice(subject);
   const { data: sharesBalance } = useGetSharesBalance(address, subject);
 
-  if (showOwnedOnly && (!sharesBalance || sharesBalance === 0n)) {
+  if (
+    (showOwnedOnly && (!sharesBalance || sharesBalance === 0n)) ||
+    (!showOwnedOnly && sharesBalance)
+  ) {
     return null;
   }
 
@@ -135,11 +138,13 @@ function SubjectCard({
           >
             Trade Keys
           </Button>
-          <Link href={`/chat/${subject}`} passHref>
-            <Button className="flex-1 bg-secondary hover:bg-secondary-light dark:bg-secondary-dark dark:hover:bg-secondary text-foreground dark:text-foreground-dark font-semibold">
-              Chat
-            </Button>
-          </Link>
+          {showOwnedOnly && (
+            <Link href={`/chat/${subject}`} passHref>
+              <Button className="flex-1 bg-secondary hover:bg-secondary-light dark:bg-secondary-dark dark:hover:bg-secondary text-foreground dark:text-foreground-dark font-semibold">
+                Chat
+              </Button>
+            </Link>
+          )}
         </div>
       </CardContent>
     </Card>
