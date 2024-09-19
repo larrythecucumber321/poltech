@@ -47,7 +47,6 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
     args: [subjectAddress, amount || "0"],
   }) as { data: [bigint, bigint] | undefined };
 
-  console.log({ sharesBalance, buyPriceData, sellPriceData });
   const { writeContractAsync } = useWriteContract();
 
   const handleBuy = async () => {

@@ -24,9 +24,10 @@ export default function ShareTradingModal({
       <DialogContent className="sm:max-w-[425px] bg-background dark:bg-background-dark text-foreground dark:text-foreground-dark">
         <DialogHeader className="flex flex-row items-center justify-between">
           <DialogTitle className="text-xl font-bold">Trade Shares</DialogTitle>
-          <Button onClick={onClose} className="h-6 w-6 rounded-full p-0">
-            <X className="h-4 w-4" />
-          </Button>
+          <Button
+            onClick={onClose}
+            className="h-6 w-6 rounded-full p-0"
+          ></Button>
         </DialogHeader>
         <ShareTrading initialSubject={subject} />
       </DialogContent>

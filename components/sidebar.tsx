@@ -58,14 +58,6 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </li>
           <li>
             <Link
-              href="/wallet"
-              className="block px-4 py-2 hover:bg-secondary hover:text-foreground dark:hover:bg-secondary-dark dark:hover:text-foreground-dark"
-            >
-              Wallet
-            </Link>
-          </li>
-          <li>
-            <Link
               href="/chat"
               className="block px-4 py-2 hover:bg-secondary hover:text-foreground dark:hover:bg-secondary-dark dark:hover:text-foreground-dark"
             >
