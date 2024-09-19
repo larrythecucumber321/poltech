@@ -47,7 +47,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         </Button>
       </div>
       <nav className="mt-4">
-        <ul className="space-y-2">
+        <ul className="space-y-2 font-bold">
           <li>
             <Link
               href="/"

@@ -6,7 +6,6 @@ import { Input } from "@/components/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 import { useGetSharesBalance } from "@/app/hooks/useShareTrading";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 type Message = {
@@ -18,9 +17,10 @@ type Message = {
 
 type ChatWindowProps = {
   subject: `0x${string}`;
+  onTradeClick: () => void;
 };
 
-export default function ChatWindow({ subject }: ChatWindowProps) {
+export default function ChatWindow({ subject, onTradeClick }: ChatWindowProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [chatRoomId, setChatRoomId] = useState<string | null>(null);
@@ -152,25 +152,18 @@ export default function ChatWindow({ subject }: ChatWindowProps) {
     </span>
   );
 
-  const TradeKeyButton = ({
-    subject,
-    noKeys,
-  }: {
-    subject: `0x${string}`;
-    noKeys: boolean;
-  }) => (
-    <Link href={`/wallet?subject=${subject}`} passHref>
-      <Button
-        className={cn(
-          "text-sm",
-          noKeys
-            ? "bg-accent hover:bg-accent-dark text-background dark:text-background-dark"
-            : "bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-foreground dark:text-foreground-dark"
-        )}
-      >
-        Trade Key
-      </Button>
-    </Link>
+  const TradeKeyButton = ({ noKeys }: { noKeys: boolean }) => (
+    <Button
+      onClick={onTradeClick}
+      className={cn(
+        "text-sm",
+        noKeys
+          ? "bg-accent hover:bg-accent-dark text-background dark:text-background-dark"
+          : "bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-foreground dark:text-foreground-dark"
+      )}
+    >
+      Trade Key
+    </Button>
   );
 
   if (!sharesBalance || sharesBalance === 0n) {

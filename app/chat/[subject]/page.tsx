@@ -4,9 +4,12 @@ import { useParams } from "next/navigation";
 import ChatWindow from "@/components/chat-window";
 import ChatList from "@/components/chat-list";
 import { DEFAULT_SUBJECTS } from "@/app/hooks/useShareTrading";
+import { useState } from "react";
+import ShareTradingModal from "@/components/share-trading-modal";
 
 export default function ChatPage() {
   const { subject } = useParams();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div className="flex h-[calc(100vh-64px)] bg-background dark:bg-background-dark">
@@ -21,13 +24,23 @@ export default function ChatPage() {
       </div>
       <div className="w-2/3 p-4">
         {subject ? (
-          <ChatWindow subject={subject as `0x${string}`} />
+          <ChatWindow
+            subject={subject as `0x${string}`}
+            onTradeClick={() => setIsModalOpen(true)}
+          />
         ) : (
           <p className="text-center text-foreground dark:text-foreground-dark">
             Select a chat to start messaging
           </p>
         )}
       </div>
+      {isModalOpen && subject && (
+        <ShareTradingModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          subject={subject as `0x${string}`}
+        />
+      )}
     </div>
   );
 }

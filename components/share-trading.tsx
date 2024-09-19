@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAccount, useWriteContract, useReadContract } from "wagmi";
-import { formatEther, parseEther } from "viem";
-import { Button } from "@/components/button";
+import { formatEther } from "viem";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { POLTECH_CONTRACT_ADDRESS } from "@/app/hooks/useShareTrading";
 import polTechABI from "@/lib/abi/polTech.json";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -87,86 +86,93 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Trade Shares</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Input
-          placeholder="Subject Address"
-          value={subjectAddress}
-          onChange={(e) => setSubjectAddress(e.target.value as `0x${string}`)}
-          className="mb-4"
-        />
+    <div className="w-full">
+      <Input
+        placeholder="Subject Address"
+        value={subjectAddress}
+        onChange={(e) => setSubjectAddress(e.target.value as `0x${string}`)}
+        className="mb-4"
+      />
 
-        <p className="mb-4">
-          Your shares balance: {sharesBalance?.toString() || "0"}
-        </p>
+      <p className="mb-4 text-foreground dark:text-foreground-dark">
+        Your shares balance: {sharesBalance?.toString() || "0"}
+      </p>
 
-        <Tabs defaultValue="buy">
-          <TabsList>
-            <TabsTrigger onClick={() => setAmount("")} value="buy">
-              Buy
-            </TabsTrigger>
-            <TabsTrigger onClick={() => setAmount("")} value="sell">
-              Sell
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="buy">
-            <Input
-              placeholder="Amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="mb-4"
-            />
-            {buyPriceData && (
-              <div className="mb-4">
-                <p>Total Buy Price: {formatEther(buyPriceData[0])} BERA</p>
-                <p>
-                  {+amount ? `End` : `Current`} Share Value:{" "}
-                  {formatEther(buyPriceData[1])} BERA
-                </p>
-              </div>
-            )}
-            <Button disabled={!buyPriceData} onClick={handleBuy}>
-              Buy Shares
-            </Button>
-          </TabsContent>
-          <TabsContent value="sell">
-            <Input
-              disabled={!sharesBalance}
-              placeholder="Amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="mb-4"
-            />
-            {sellPriceData && (
-              <div className="mb-4">
-                <p>Total Sell Price: {formatEther(sellPriceData[0])} BERA</p>
-                <p>
-                  {+amount ? `End` : `Current`} Share Value:{" "}
-                  {formatEther(sellPriceData[1])} BERA
-                </p>
-              </div>
-            )}
-            <Button disabled={!sellPriceData} onClick={handleSell}>
-              Sell Shares
-            </Button>
-          </TabsContent>
-        </Tabs>
-        {txHash && (
-          <div className="mt-4">
-            <Button
-              as="a"
-              href={`https://bartio.beratrail.io/tx/${txHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              View Transaction
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      <Tabs defaultValue="buy" className="w-full">
+        <TabsList className="w-full mb-4">
+          <TabsTrigger value="buy" className="w-1/2">
+            Buy
+          </TabsTrigger>
+          <TabsTrigger value="sell" className="w-1/2">
+            Sell
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="buy">
+          <Input
+            placeholder="Amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="mb-4"
+          />
+          {buyPriceData && (
+            <div className="mb-4 text-foreground dark:text-foreground-dark">
+              <p>Total Buy Price: {formatEther(buyPriceData[0])} BERA</p>
+              <p>
+                {+amount ? `End` : `Current`} Share Value:{" "}
+                {formatEther(buyPriceData[1])} BERA
+              </p>
+            </div>
+          )}
+          <Button
+            disabled={!buyPriceData}
+            onClick={handleBuy}
+            className="w-full bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-background dark:text-background-dark"
+          >
+            Buy Shares
+          </Button>
+        </TabsContent>
+        <TabsContent value="sell">
+          <Input
+            disabled={!sharesBalance}
+            placeholder="Amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="mb-4"
+          />
+          {sellPriceData && (
+            <div className="mb-4 text-foreground dark:text-foreground-dark">
+              <p>Total Sell Price: {formatEther(sellPriceData[0])} BERA</p>
+              <p>
+                {+amount ? `End` : `Current`} Share Value:{" "}
+                {formatEther(sellPriceData[1])} BERA
+              </p>
+            </div>
+          )}
+          <Button
+            disabled={!sellPriceData}
+            onClick={handleSell}
+            className="w-full bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-background dark:text-background-dark"
+          >
+            Sell Shares
+          </Button>
+        </TabsContent>
+      </Tabs>
+      {txHash && (
+        <div className="mt-4">
+          <Button
+            onClick={() =>
+              window.open(
+                `https://bartio.beratrail.io/tx/${txHash}`,
+                "_blank",
+                "noopener,noreferrer"
+              )
+            }
+            className="w-full bg-secondary hover:bg-secondary-light dark:bg-secondary-dark dark:hover:bg-secondary text-foreground dark:text-foreground-dark"
+          >
+            View Transaction
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }
