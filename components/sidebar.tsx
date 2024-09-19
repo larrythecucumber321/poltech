@@ -35,7 +35,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         open ? "translate-x-0" : "-translate-x-full"
       } transition-transform duration-300 ease-in-out md:relative md:translate-x-0 border-r border-border dark:border-border-dark`}
     >
-      <div className="flex justify-between items-center p-4 bg-primary dark:bg-primary-dark">
+      <div className="flex justify-between items-center p-7 h-22 bg-primary dark:bg-primary-dark">
         <h2 className="text-xl font-bold text-background dark:text-background-dark">
           Menu
         </h2>

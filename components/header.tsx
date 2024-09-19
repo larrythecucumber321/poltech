@@ -1,5 +1,6 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Menu } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 type HeaderProps = {
@@ -16,9 +17,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         >
           <Menu size={24} />
         </Button>
-        <h1 className="text-2xl font-bold text-primary dark:text-primary-dark">
-          POLTech
-        </h1>
+        <Image alt="logo" width={150} height={50} src="/logo.png" />
       </div>
       <ConnectButton />
     </header>
