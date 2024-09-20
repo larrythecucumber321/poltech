@@ -9,7 +9,7 @@ import { formatEther } from "viem";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { POLTECH_CONTRACT_ADDRESS } from "@/app/hooks/useShareTrading";
-import polTechABI from "@/lib/abi/polTech.json";
+import polTechABI from "@/lib/abi/POLTech.json";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type ShareTradingProps = {
