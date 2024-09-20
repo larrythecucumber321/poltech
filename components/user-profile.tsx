@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAccount, useSignMessage } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ export function UserProfile() {
     }
   }, [address]);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     if (!address) return;
     const { data, error } = await supabase
       .from("user_profiles")
@@ -28,7 +28,7 @@ export function UserProfile() {
     } else if (data) {
       setDisplayName(data.display_name || "");
     }
-  };
+  }, [address]);
 
   const handleSave = async () => {
     if (!address) return;
@@ -36,7 +36,7 @@ export function UserProfile() {
     const message = `Update profile for ${address}`;
     const signature = await signMessage({ message });
 
-    if (signature) {
+    if (signature !== undefined) {
       const { error } = await supabase
         .from("user_profiles")
         .upsert({ address, display_name: displayName });

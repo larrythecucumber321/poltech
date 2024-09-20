@@ -28,7 +28,7 @@ export default function ChatWindow({ subject, onTradeClick }: ChatWindowProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { data: sharesBalance } = useGetSharesBalance(address || "0x", subject);
   useEffect(() => {
-    if (sharesBalance && sharesBalance > 0n) {
+    if (sharesBalance && (sharesBalance as bigint) > BigInt(0)) {
       fetchOrCreateChatRoom(subject);
     }
   }, [subject, sharesBalance]);
@@ -166,7 +166,7 @@ export default function ChatWindow({ subject, onTradeClick }: ChatWindowProps) {
     </Button>
   );
 
-  if (!sharesBalance || sharesBalance === 0n) {
+  if (!sharesBalance || sharesBalance === BigInt(0)) {
     return (
       <div className="flex items-center justify-center flex-col h-full bg-background dark:bg-background-dark rounded-lg shadow-md border border-border dark:border-border-dark">
         <h2 className="text-xl font-bold p-4 text-foreground dark:text-foreground-dark rounded-t-lg flex justify-between items-center">
@@ -179,7 +179,7 @@ export default function ChatWindow({ subject, onTradeClick }: ChatWindowProps) {
         </p>
         <SharesCount />
         <div className="mt-4">
-          <TradeKeyButton subject={subject} noKeys={true} />
+          <TradeKeyButton noKeys={true} />
         </div>
       </div>
     );
@@ -193,7 +193,7 @@ export default function ChatWindow({ subject, onTradeClick }: ChatWindowProps) {
         </span>
         <div className="flex items-center space-x-2">
           <SharesCount />
-          <TradeKeyButton subject={subject} noKeys={false} />
+          <TradeKeyButton noKeys={false} />
         </div>
       </h2>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

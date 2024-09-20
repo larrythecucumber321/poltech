@@ -58,7 +58,7 @@ export function ShareTrading({ initialSubject }: ShareTradingProps) {
       refetchBuyPrice();
       refetchSellPrice();
     }
-  }, [isConfirmed]);
+  }, [isConfirmed, refetchSharesBalance, refetchBuyPrice, refetchSellPrice]);
 
   const handleBuy = async () => {
     if (subjectAddress && buyPriceData) {

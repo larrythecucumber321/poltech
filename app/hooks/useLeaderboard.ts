@@ -25,14 +25,16 @@ export function useLeaderboard(vaultId: string, limit: number = 10) {
   useEffect(() => {
     async function fetchLeaderboard() {
       try {
-        const data = await request(API_URL, LEADERBOARD_QUERY, {
+        const data = (await request(API_URL, LEADERBOARD_QUERY, {
           first: limit,
           vaultId: vaultId,
-        });
-        setLeaderboard(data.userVaultDeposits_collection);
+        })) as { data: { userVaultDeposits_collection: LeaderboardEntry[] } };
+        setLeaderboard(data.data.userVaultDeposits_collection);
         setLoading(false);
       } catch (err) {
-        setError(err as Error);
+        setError(
+          err instanceof Error ? err : new Error("An unknown error occurred")
+        );
         setLoading(false);
       }
     }

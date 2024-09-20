@@ -5,7 +5,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ShareTrading } from "@/components/share-trading";
-import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type ShareTradingModalProps = {

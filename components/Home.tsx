@@ -103,7 +103,8 @@ function SubjectCard({
   const { data: sharesBalance } = useGetSharesBalance(address, subject);
 
   if (
-    (showOwnedOnly && (!sharesBalance || sharesBalance === 0n)) ||
+    (showOwnedOnly &&
+      (!sharesBalance || (sharesBalance as bigint) == BigInt(0))) ||
     (!showOwnedOnly && sharesBalance)
   ) {
     return null;
@@ -117,9 +118,9 @@ function SubjectCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="mt-4">
-        {sharesBalance && sharesBalance > 0n && (
+        {sharesBalance !== undefined && (sharesBalance as bigint) > 0 && (
           <p className="text-lg text-foreground dark:text-foreground-dark mb-2">
-            Your Shares: {sharesBalance.toString()}
+            Your Shares: {(sharesBalance as bigint).toString()}
           </p>
         )}
         <p className="text-lg text-foreground dark:text-foreground-dark mb-4">
