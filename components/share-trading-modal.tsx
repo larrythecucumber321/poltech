@@ -5,7 +5,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ShareTrading } from "@/components/share-trading";
-import { Button } from "@/components/ui/button";
 
 type ShareTradingModalProps = {
   isOpen: boolean;
@@ -20,13 +19,9 @@ export default function ShareTradingModal({
 }: ShareTradingModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-background dark:bg-background-dark text-foreground dark:text-foreground-dark">
-        <DialogHeader className="flex flex-row items-center justify-between">
+      <DialogContent className="sm:max-w-[425px] bg-background-dark text-foreground-dark">
+        <DialogHeader>
           <DialogTitle className="text-xl font-bold">Trade Shares</DialogTitle>
-          <Button
-            onClick={onClose}
-            className="h-6 w-6 rounded-full p-0"
-          ></Button>
         </DialogHeader>
         <ShareTrading initialSubject={subject} />
       </DialogContent>

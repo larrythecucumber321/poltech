@@ -45,7 +45,7 @@ export default function Home() {
         </>
       ) : (
         <p className="text-lg text-foreground dark:text-foreground-dark">
-          Please connect your wallet to view subjects and trade keys.
+          Please connect your wallet to view subjects and trade shares.
         </p>
       )}
       {isModalOpen && selectedSubject && (
@@ -137,7 +137,7 @@ function SubjectCard({
             onClick={() => onTradeClick(subject)}
             className="flex-1 bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-background dark:text-background-dark font-semibold"
           >
-            Trade Keys
+            Trade Shares
           </Button>
           {showOwnedOnly && (
             <Link href={`/chat/${subject}`} passHref>

@@ -162,7 +162,7 @@ export default function ChatWindow({ subject, onTradeClick }: ChatWindowProps) {
           : "bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-foreground dark:text-foreground-dark"
       )}
     >
-      Trade Key
+      Trade Shares
     </Button>
   );
 
