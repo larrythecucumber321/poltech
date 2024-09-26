@@ -22,12 +22,24 @@ type LeaderboardEntry = {
 };
 
 const LEADERBOARD_QUERY = gql`
-  query GetLeaderboard($vaultId: String!, $first: Int!) {
-    userVaultDeposits_collection(
+  query GetLeaderboard($vaultId: String!, $userId: String!) {
+    topTen: userVaultDeposits_collection(
       where: { vault_: { id: $vaultId } }
-      first: $first
+      first: 10
       orderBy: amount
       orderDirection: desc
+    ) {
+      id
+      user
+      amount
+      vault {
+        id
+        vaultAddress
+      }
+    }
+    specificUser: userVaultDeposits_collection(
+      where: { and: [{ vault_: { id: $vaultId } }, { user: $userId }] }
+      first: 1
     ) {
       id
       user
@@ -41,15 +53,17 @@ const LEADERBOARD_QUERY = gql`
 `;
 
 interface LeaderboardQueryResponse {
-  userVaultDeposits_collection: LeaderboardEntry[];
+  topTen: LeaderboardEntry[];
+  specificUser: LeaderboardEntry[];
 }
 
-export function useLeaderboard(vaultId: string, limit: number = 10) {
+export function useLeaderboard(vaultId: string) {
   const { address } = useAccount();
   const { data, loading, error } = useQuery<LeaderboardQueryResponse>(
     LEADERBOARD_QUERY,
     {
-      variables: { vaultId, first: limit },
+      variables: { vaultId, userId: address || "" },
+      skip: !address,
     }
   );
 
@@ -67,12 +81,10 @@ export function useLeaderboard(vaultId: string, limit: number = 10) {
     });
 
   const sortedLeaderboard = useMemo(() => {
-    if (!data?.userVaultDeposits_collection) return [];
+    if (!data) return [];
 
-    const userEntry = data.userVaultDeposits_collection.find(
-      (entry) => entry.user.toLowerCase() === address?.toLowerCase()
-    );
-    const otherEntries = data.userVaultDeposits_collection.filter(
+    const userEntry = data.specificUser[0];
+    const otherEntries = data.topTen.filter(
       (entry) => entry.user.toLowerCase() !== address?.toLowerCase()
     );
 
@@ -81,11 +93,12 @@ export function useLeaderboard(vaultId: string, limit: number = 10) {
 
   const claimRewards = () => {
     if (address) {
+      console.log("Claiming rewards", address);
       writeContract({
         address: VAULT_CONTRACT_ADDRESS,
         abi: vaultABI.abi,
         functionName: "getReward",
-        args: [address, address],
+        args: [address],
       });
     }
   };

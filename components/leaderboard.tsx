@@ -22,6 +22,10 @@ export default function Leaderboard() {
   if (loading) return <p>Loading leaderboard...</p>;
   if (error) return <p>Error loading leaderboard: {error.message}</p>;
 
+  const connectedUserIndex = leaderboard.findIndex(
+    (entry) => entry.user.toLowerCase() === address?.toLowerCase()
+  );
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -31,53 +35,63 @@ export default function Leaderboard() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {leaderboard.map((entry, index) => (
-            <div
-              key={entry.id}
-              className={`flex items-center justify-between p-4 rounded-lg ${
-                entry.user.toLowerCase() === address?.toLowerCase()
-                  ? "bg-primary/20 dark:bg-primary-dark/20"
-                  : "bg-secondary dark:bg-secondary-dark"
-              }`}
-            >
-              <div className="flex items-center space-x-4">
-                <span className="text-2xl font-bold text-primary dark:text-primary-dark">
-                  {index + 1}
-                </span>
-                <div>
-                  <p className="font-semibold text-foreground dark:text-foreground-dark">
-                    {entry.user.slice(0, 6)}...{entry.user.slice(-4)}
-                  </p>
-                  <p className="text-sm text-foreground-muted dark:text-foreground-muted-dark">
-                    {parseFloat(entry.amount).toFixed(4)} BERA
-                  </p>
+          {leaderboard.map((entry, index) => {
+            const isConnectedUser =
+              entry.user.toLowerCase() === address?.toLowerCase();
+            const displayIndex = isConnectedUser
+              ? "You"
+              : connectedUserIndex !== -1 && index > connectedUserIndex
+              ? index
+              : index + 1;
+
+            return (
+              <div
+                key={entry.id}
+                className={`flex items-center justify-between p-4 rounded-lg ${
+                  isConnectedUser
+                    ? "bg-primary/20 dark:bg-primary-dark/20"
+                    : "bg-secondary dark:bg-secondary-dark"
+                }`}
+              >
+                <div className="flex items-center space-x-4">
+                  <span className="text-2xl font-bold text-primary dark:text-primary-dark">
+                    {displayIndex}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-foreground dark:text-foreground-dark">
+                      {entry.user.slice(0, 6)}...{entry.user.slice(-4)}
+                    </p>
+                    <p className="text-sm text-foreground-muted dark:text-foreground-muted-dark">
+                      {parseFloat(entry.amount).toFixed(4)} BERA
+                    </p>
+                  </div>
                 </div>
+                {isConnectedUser && (
+                  <div className="flex flex-col items-end">
+                    <p className="text-sm text-foreground-muted dark:text-foreground-muted-dark">
+                      Pending Rewards:{" "}
+                      {earnedRewards ? formatEther(earnedRewards) : "0"} BGT
+                    </p>
+                    <Button
+                      onClick={claimRewards}
+                      disabled={
+                        isClaimingRewards ||
+                        !earnedRewards ||
+                        earnedRewards === BigInt(0)
+                      }
+                      className="mt-2 bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-background dark:text-background-dark"
+                    >
+                      {isClaimingRewards
+                        ? "Claiming..."
+                        : isClaimConfirmed
+                        ? "Claimed!"
+                        : "Claim Rewards"}
+                    </Button>
+                  </div>
+                )}
               </div>
-              {entry.user.toLowerCase() === address?.toLowerCase() && (
-                <div className="flex flex-col items-end">
-                  <p className="text-sm text-foreground-muted dark:text-foreground-muted-dark">
-                    Pending Rewards:{" "}
-                    {earnedRewards ? formatEther(earnedRewards) : "0"} BGT
-                  </p>
-                  <Button
-                    onClick={claimRewards}
-                    disabled={
-                      isClaimingRewards ||
-                      !earnedRewards ||
-                      earnedRewards === BigInt(0)
-                    }
-                    className="mt-2 bg-primary hover:bg-primary-light dark:bg-primary-dark dark:hover:bg-primary text-background dark:text-background-dark"
-                  >
-                    {isClaimingRewards
-                      ? "Claiming..."
-                      : isClaimConfirmed
-                      ? "Claimed!"
-                      : "Claim Rewards"}
-                  </Button>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </CardContent>
     </Card>
