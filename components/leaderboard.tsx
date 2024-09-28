@@ -17,7 +17,7 @@ export default function Leaderboard() {
     claimRewards,
     isClaimingRewards,
     isClaimConfirmed,
-  } = useLeaderboard(VAULT_CONTRACT_ADDRESS, 10);
+  } = useLeaderboard(VAULT_CONTRACT_ADDRESS);
 
   if (loading) return <p>Loading leaderboard...</p>;
   if (error) return <p>Error loading leaderboard: {error.message}</p>;
@@ -70,7 +70,10 @@ export default function Leaderboard() {
                   <div className="flex flex-col items-end">
                     <p className="text-sm text-foreground-muted dark:text-foreground-muted-dark">
                       Pending Rewards:{" "}
-                      {earnedRewards ? formatEther(earnedRewards) : "0"} BGT
+                      {earnedRewards
+                        ? formatEther(earnedRewards as bigint)
+                        : "0"}{" "}
+                      BGT
                     </p>
                     <Button
                       onClick={claimRewards}

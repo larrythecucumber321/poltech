@@ -8,7 +8,8 @@ import { useState } from "react";
 import ShareTradingModal from "@/components/share-trading-modal";
 
 export default function ChatPage() {
-  const { subject } = useParams();
+  const params = useParams();
+  const subject = params?.subject as string;
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
