@@ -65,10 +65,10 @@ export default function Leaderboard() {
                       <b>Current Staked Bera:</b> {(+entry.currentStakedAmount / 1e18).toFixed(2)} BERA
                     </p>
                     <p className="text-sm text-foreground-muted dark:text-foreground-muted-dark">
-                      <b>Total Shares Bought</b> {parseFloat(entry.totalStaked).toFixed(0)}
+                      <b>Total Shares Bought:</b> {parseFloat(entry.totalStaked).toFixed(0)}
                     </p>
                     <p className="text-sm text-foreground-muted dark:text-foreground-muted-dark">
-                      <b>Total Shares Sold</b> {parseFloat(entry.totalWithdrawal).toFixed(0)}
+                      <b>Total Shares Sold:</b> {parseFloat(entry.totalWithdrawal).toFixed(0)}
                     </p>
 
                   </div>
