@@ -23,7 +23,7 @@ export default function Leaderboard() {
   if (error) return <p>Error loading leaderboard: {error.message}</p>;
 
   const connectedUserIndex = leaderboard.findIndex(
-    (entry) => entry.user.toLowerCase() === address?.toLowerCase()
+    (entry) => entry.id.toLowerCase() === address?.toLowerCase()
   );
 
   return (
@@ -37,7 +37,7 @@ export default function Leaderboard() {
         <div className="space-y-4">
           {leaderboard.map((entry, index) => {
             const isConnectedUser =
-              entry.user.toLowerCase() === address?.toLowerCase();
+              entry.id.toLowerCase() === address?.toLowerCase();
             const displayIndex = isConnectedUser
               ? "You"
               : connectedUserIndex !== -1 && index > connectedUserIndex
@@ -58,12 +58,19 @@ export default function Leaderboard() {
                     {displayIndex}
                   </span>
                   <div>
-                    <p className="font-semibold text-foreground dark:text-foreground-dark">
-                      {entry.user.slice(0, 6)}...{entry.user.slice(-4)}
+                    <p className="font-semibold text-foreground dark:text-foreground-dark mb-4">
+                      {entry.id.slice(0, 6)}...{entry.id.slice(-4)}
                     </p>
                     <p className="text-sm text-foreground-muted dark:text-foreground-muted-dark">
-                      {parseFloat(entry.amount).toFixed(4)} BERA
+                      <b>Current Staked Bera:</b> {(+entry.currentStakedAmount / 1e18).toFixed(2)} BERA
                     </p>
+                    <p className="text-sm text-foreground-muted dark:text-foreground-muted-dark">
+                      <b>Total Shares Bought</b> {parseFloat(entry.totalStaked).toFixed(0)}
+                    </p>
+                    <p className="text-sm text-foreground-muted dark:text-foreground-muted-dark">
+                      <b>Total Shares Sold</b> {parseFloat(entry.totalWithdrawal).toFixed(0)}
+                    </p>
+
                   </div>
                 </div>
                 {isConnectedUser && (

@@ -12,7 +12,7 @@ function createApolloClient() {
   return new ApolloClient({
     ssrMode: typeof window === "undefined", // set to true for SSR
     link: createHttpLink({
-      uri: "https://api.goldsky.com/api/public/project_clq1h5ct0g4a201x18tfte5iv/subgraphs/bgt-subgraph/v0.0.2/gn",
+      uri: "https://api.ghostlogs.xyz/gg/pub/127aac66-a5b3-4fc5-99c5-0fbf52313924/ghostgraph",
     }),
     cache: new InMemoryCache(),
   });

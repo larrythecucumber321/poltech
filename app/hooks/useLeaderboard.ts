@@ -13,48 +13,50 @@ import vaultABI from "@/lib/abi/Vault.json";
 
 type LeaderboardEntry = {
   id: string;
-  user: string;
-  amount: string;
-  vault: {
-    id: string;
-    vaultAddress: string;
-  };
+  totalStaked: string;
+  totalWithdrawal: string;
+  totalShares: string;
+  totalStakedAmount: string
+  totalWithdrawalAmount: string;
+  currentStakedAmount: string;
+  endPrice: string;
+  bera: string;
 };
 
 const LEADERBOARD_QUERY = gql`
-  query GetLeaderboard($vaultId: String!, $userId: String!) {
-    topTen: userVaultDeposits_collection(
-      where: { vault_: { id: $vaultId } }
-      first: 10
-      orderBy: amount
-      orderDirection: desc
-    ) {
-      id
-      user
-      amount
-      vault {
+  query GetLeaderboard($userId: String!) {
+    users(orderBy: "currentStakedAmount", orderDirection: "desc", limit: 10) {
+      items {
         id
-        vaultAddress
+        totalStaked
+        totalWithdrawal
+        totalStakedAmount
+        totalWithdrawalAmount
+        currentStakedAmount
+        endPrice
+        totalShares
+        bera
       }
     }
-    specificUser: userVaultDeposits_collection(
-      where: { and: [{ vault_: { id: $vaultId } }, { user: $userId }] }
-      first: 1
-    ) {
+    user(id: $userId) {
       id
-      user
-      amount
-      vault {
-        id
-        vaultAddress
-      }
+      totalStaked
+      totalWithdrawal
+      totalStakedAmount
+      totalWithdrawalAmount
+      currentStakedAmount
+      endPrice
+      totalShares
+      bera
     }
   }
 `;
 
 interface LeaderboardQueryResponse {
-  topTen: LeaderboardEntry[];
-  specificUser: LeaderboardEntry[];
+  users: {
+    items: LeaderboardEntry[]
+  }
+  user: LeaderboardEntry
 }
 
 export function useLeaderboard(vaultId: string) {
@@ -83,9 +85,9 @@ export function useLeaderboard(vaultId: string) {
   const sortedLeaderboard = useMemo(() => {
     if (!data) return [];
 
-    const userEntry = data.specificUser[0];
-    const otherEntries = data.topTen.filter(
-      (entry) => entry.user.toLowerCase() !== address?.toLowerCase()
+    const userEntry = data.user
+    const otherEntries = data.users.items.filter(
+      (entry) => entry.id.toLowerCase() !== address?.toLowerCase()
     );
 
     return userEntry ? [userEntry, ...otherEntries] : otherEntries;
